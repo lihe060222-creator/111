@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ABCD 区间配对计算器</title>
+  <style>
+    :root {
+      --bg: #f8fafc;
+      --card: #ffffff;
+      --text: #0f172a;
+      --muted: #64748b;
+      --border: #e2e8f0;
+      --primary: #2563eb;
+      --primary-hover: #1d4ed8;
+      --accent-bg: #eff6ff;
+      --accent-border: #bfdbfe;
+      --error-bg: #fef2f2;
+      --error-text: #dc2626;
+      --error-border: #fecaca;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #0f172a;
+        --card: #1e293b;
+        --text: #f8fafc;
+        --muted: #94a3b8;
+        --border: #334155;
+        --primary: #3b82f6;
+        --primary-hover: #2563eb;
+        --accent-bg: #1e3a8a33;
+        --accent-border: #1d4ed8;
+        --error-bg: #7f1d1d33;
+        --error-text: #f87171;
+        --error-border: #991b1b;
+      }
+    }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "PingFang SC", "Microsoft YaHei", sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 24px 16px;
+      line-height: 1.5;
+    }
+    .container {
+      width: 100%;
+      max-width: 640px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 28px;
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.06);
+    }
+    h1 {
+      font-size: 1.35rem;
+      font-weight: 700;
+      margin-bottom: 6px;
+    }
+    .subtitle {
+      font-size: 0.875rem;
+      color: var(--muted);
+      margin-bottom: 22px;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+    @media (max-width: 480px) {
+      .grid {
+        grid-template-columns: 1fr;
+      }
+    }
+    .field label {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.875rem;
+      font-weight: 600;
+      margin-bottom: 6px;
+    }
+    .range-badge {
+      font-size: 0.75rem;
+      font-weight: 500;
+      color: var(--muted);
+      background: var(--bg);
+      padding: 2px 8px;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+    }
+    .field input {
+      width: 100%;
+      padding: 10px 12px;
+      font-size: 0.95rem;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: var(--bg);
+      color: var(--text);
+      outline: none;
+      transition: border-color 0.15s;
+    }
+    .field input:focus {
+      border-color: var(--primary);
+    }
+    .actions {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+    button {
+      cursor: pointer;
+      border: none;
+      border-radius: 8px;
+      padding: 11px 18px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      transition: background-color 0.15s, opacity 0.15s;
+    }
+    .btn-primary {
+      flex: 1;
+      background: var(--primary);
+      color: #ffffff;
+    }
+    .btn-primary:hover {
+      background: var(--primary-hover);
+    }
+    .btn-secondary {
+      background: var(--bg);
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+    .error-box {
+      display: none;
+      padding: 12px 14px;
+      border-radius: 8px;
+      background: var(--error-bg);
+      border: 1px solid var(--error-border);
+      color: var(--error-text);
+      font-size: 0.875rem;
+      margin-bottom: 18px;
+    }
+    .result-box {
+      padding: 18px;
+      border-radius: 12px;
+      background: var(--accent-bg);
+      border: 1px solid var(--accent-border);
+      margin-bottom: 20px;
+    }
+    .result-main {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 14px;
+      padding-bottom: 14px;
+      border-bottom: 1px solid var(--border);
+    }
+    .result-label {
+      font-size: 0.875rem;
+      color: var(--muted);
+    }
+    .result-code {
+      font-size: 1.85rem;
+      font-weight: 800;
+      color: var(--primary);
+      letter-spacing: 0.5px;
+    }
+    .metrics {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+    }
+    .metric {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px 12px;
+    }
+    .metric-name {
+      font-size: 0.75rem;
+      color: var(--muted);
+    }
+    .metric-val {
+      font-size: 0.95rem;
+      font-weight: 700;
+      margin-top: 2px;
+      word-break: break-all;
+    }
+    .intervals {
+      border-top: 1px solid var(--border);
+      padding-top: 16px;
+    }
+    .intervals-title {
+      font-size: 0.8125rem;
+      font-weight: 600;
+      color: var(--muted);
+      margin-bottom: 10px;
+    }
+    .interval-list {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 6px;
+      font-size: 0.78rem;
+    }
+    @media (max-width: 480px) {
+      .interval-list {
+        grid-template-columns: 1fr;
+      }
+    }
+    .interval-item {
+      display: flex;
+      justify-content: space-between;
+      padding: 6px 10px;
+      border-radius: 6px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      color: var(--muted);
+    }
+    .interval-item.active {
+      background: var(--primary);
+      color: #ffffff;
+      border-color: var(--primary);
+      font-weight: 600;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>ABCD 数值运算与区间配对</h1>
+    <p class="subtitle">
+      公式：x = 0.1b + d &nbsp;|&nbsp; y = (4ac - b²) / 4ac &nbsp;|&nbsp; w = -x + 100y
+    </p>
+
+    <div class="grid">
+      <div class="field">
+        <label for="input-a"><span>参数 a</span><span class="range-badge">(0, 100]</span></label>
+        <input id="input-a" type="number" step="any" value="10" placeholder="0 < a ≤ 100" />
+      </div>
+      <div class="field">
+        <label for="input-b"><span>参数 b</span><span class="range-badge">[-1000, 1000]</span></label>
+        <input id="input-b" type="number" step="any" value="20" placeholder="-1000 ≤ b ≤ 1000" />
+      </div>
+      <div class="field">
+        <label for="input-c"><span>参数 c</span><span class="range-badge">[-100, 100]</span></label>
+        <input id="input-c" type="number" step="any" value="5" placeholder="-100 ≤ c ≤ 100 (c ≠ 0)" />
+      </div>
+      <div class="field">
+        <label for="input-d"><span>参数 d</span><span class="range-badge">(0, 1000]</span></label>
+        <input id="input-d" type="number" step="any" value="50" placeholder="0 < d ≤ 1000" />
+      </div>
+    </div>
+
+    <div class="actions">
+      <button class="btn-primary" id="calc-btn" type="button">立即计算</button>
+      <button class="btn-secondary" id="reset-btn" type="button">重置</button>
+    </div>
+
+    <div class="error-box" id="error-box"></div>
+
+    <div class="result-box" id="result-box">
+      <div class="result-main">
+        <div>
+          <div class="result-label">配对输出结果</div>
+          <div id="matched-range" style="font-size: 0.78rem; color: var(--muted); margin-top: 2px;">-670 &lt; w &lt; 91</div>
+        </div>
+        <div class="result-code" id="output-result">ZJ</div>
+      </div>
+      <div class="metrics">
+        <div class="metric">
+          <div class="metric-name">x = 0.1b + d</div>
+          <div class="metric-val" id="val-x">-</div>
+        </div>
+        <div class="metric">
+          <div class="metric-name">y = (4ac - b²) / 4ac</div>
+          <div class="metric-val" id="val-y">-</div>
+        </div>
+        <div class="metric">
+          <div class="metric-name">w = -x + 100y</div>
+          <div class="metric-val" id="val-w">-</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="intervals">
+      <div class="intervals-title">w 区间配对对照表</div>
+      <div class="interval-list" id="interval-list">
+        <div class="interval-item" data-key="YC"><span>w &lt; -7891</span><span>YC</span></div>
+        <div class="interval-item" data-key="ZY"><span>-7891 &lt; w &lt; -1378</span><span>ZY</span></div>
+        <div class="interval-item" data-key="ZJJ_1"><span>-1378 &lt; w &lt; -670</span><span>ZJJ</span></div>
+        <div class="interval-item" data-key="ZJ"><span>-670 &lt; w &lt; 91</span><span>ZJ</span></div>
+        <div class="interval-item" data-key="ZJJ_2"><span>91 &lt; w &lt; 1378</span><span>ZJJ</span></div>
+        <div class="interval-item" data-key="amber"><span>1378 &lt; w &lt; 2778</span><span>amber</span></div>
+        <div class="interval-item" data-key="v"><span>2778 &lt; w &lt; 6767</span><span>v</span></div>
+        <div class="interval-item" data-key="cowcome"><span>w &gt; 6767</span><span>cowcome</span></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const inputA = document.getElementById('input-a');
+    const inputB = document.getElementById('input-b');
+    const inputC = document.getElementById('input-c');
+    const inputD = document.getElementById('input-d');
+    const errorBox = document.getElementById('error-box');
+    const outputResult = document.getElementById('output-result');
+    const matchedRange = document.getElementById('matched-range');
+    const valX = document.getElementById('val-x');
+    const valY = document.getElementById('val-y');
+    const valW = document.getElementById('val-w');
+    const intervalItems = document.querySelectorAll('.interval-item');
+
+    function formatNum(num) {
+      return Number.isInteger(num) ? String(num) : num.toFixed(4).replace(/\.?0+$/, '');
+    }
+
+    function matchInterval(w) {
+      if (w < -7891) return { label: 'YC', key: 'YC', range: 'w < -7891' };
+      if (w < -1378) return { label: 'ZY', key: 'ZY', range: '-7891 ≤ w < -1378' };
+      if (w < -670) return { label: 'ZJJ', key: 'ZJJ_1', range: '-1378 ≤ w < -670' };
+      if (w < 91) return { label: 'ZJ', key: 'ZJ', range: '-670 ≤ w < 91' };
+      if (w < 1378) return { label: 'ZJJ', key: 'ZJJ_2', range: '91 ≤ w < 1378' };
+      if (w < 2778) return { label: 'amber', key: 'amber', range: '1378 ≤ w < 2778' };
+      if (w <= 6767) return { label: 'v', key: 'v', range: '2778 ≤ w ≤ 6767' };
+      return { label: 'cowcome', key: 'cowcome', range: 'w > 6767' };
+    }
+
+    function calculate() {
+      const a = parseFloat(inputA.value);
+      const b = parseFloat(inputB.value);
+      const c = parseFloat(inputC.value);
+      const d = parseFloat(inputD.value);
+
+      const errors = [];
+      if (Number.isNaN(a) || !(a > 0 && a <= 100)) {
+        errors.push('a 的范围需满足 (0, 100]，即 0 < a ≤ 100');
+      }
+      if (Number.isNaN(b) || !(b >= -1000 && b <= 1000)) {
+        errors.push('b 的范围需满足 [-1000, 1000]，即 -1000 ≤ b ≤ 1000');
+      }
+      if (Number.isNaN(c) || !(c >= -100 && c <= 100)) {
+        errors.push('c 的范围需满足 [-100, 100]，即 -100 ≤ c ≤ 100');
+      } else if (c === 0) {
+        errors.push('c 不能为 0（否则分母 4ac = 0 无法计算 y）');
+      }
+      if (Number.isNaN(d) || !(d > 0 && d <= 1000)) {
+        errors.push('d 的范围需满足 (0, 1000]，即 0 < d ≤ 1000');
+      }
+
+      if (errors.length > 0) {
+        errorBox.style.display = 'block';
+        errorBox.innerHTML = errors.join('<br/>');
+        outputResult.textContent = '--';
+        matchedRange.textContent = '输入超出范围';
+        valX.textContent = '-';
+        valY.textContent = '-';
+        valW.textContent = '-';
+        intervalItems.forEach(el => el.classList.remove('active'));
+        return;
+      }
+
+      errorBox.style.display = 'none';
+
+      const k = 0.1;
+      const n = 100;
+      const x = k * b + d;
+      const denom = 4 * a * c;
+      const y = (denom - b * b) / denom;
+      const w = -x + n * y;
+
+      const matched = matchInterval(w);
+
+      valX.textContent = formatNum(x);
+      valY.textContent = formatNum(y);
+      valW.textContent = formatNum(w);
+      outputResult.textContent = matched.label;
+      matchedRange.textContent = matched.range;
+
+      intervalItems.forEach(el => {
+        el.classList.toggle('active', el.dataset.key === matched.key);
+      });
+    }
+
+    document.getElementById('calc-btn').addEventListener('click', calculate);
+    document.getElementById('reset-btn').addEventListener('click', () => {
+      inputA.value = '10';
+      inputB.value = '20';
+      inputC.value = '5';
+      inputD.value = '50';
+      calculate();
+    });
+
+    [inputA, inputB, inputC, inputD].forEach(inp => {
+      inp.addEventListener('input', calculate);
+    });
+
+    calculate();
+  </script>
+</body>
+</html>
